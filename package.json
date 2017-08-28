@@ -1,0 +1,6 @@
+{
+  "name": "zerobot",
+  "version": "0.0.1",
+  "description": "Trying to make a Raspberry Pi Zero robot",
+  "dependencies": {}
+}
