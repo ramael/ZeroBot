@@ -2,5 +2,9 @@
   "name": "zerobot",
   "version": "0.0.1",
   "description": "Trying to make a Raspberry Pi Zero robot",
-  "dependencies": {}
+  "dependencies": {
+    "express": "^4.15.4",
+    "socket.io": "^2.0.3",
+    "pigpio":"^0.6.1"
+  }
 }
