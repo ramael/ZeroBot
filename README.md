@@ -20,6 +20,6 @@ Software list:
 - [Node.js](http://nodejs.org/)
 - [Express.js](http://expressjs.com)
 - [Socket.io](http://socket.io/)
-- [Pi-Gpio](http://github.com/fivdi/pigpio)
+- [Pi-Gpio](http://github.com/fivdi/pigpio) to be replaced by [onoff](http://github.com/fivdi/onoff)???
 - [MultiTouch](http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/)
-- [MJpg-Streamer](http://github.com/jacksonliam/mjpg-streamer) to be replaced with [UV4L](http://www.linux-projects.org/uv4l/)
+- [MJpg-Streamer](http://github.com/jacksonliam/mjpg-streamer) to be replaced by [UV4L](http://www.linux-projects.org/uv4l/)
