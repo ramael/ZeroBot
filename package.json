@@ -6,5 +6,9 @@
     "express": "^4.15.4",
     "socket.io": "^2.0.3",
     "pigpio":"^0.6.1"
+  },
+  "repository": { 
+    "type" : "git", 
+    "url" : "https://github.com/ramael/ZeroBot.git"
   }
 }
