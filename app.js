@@ -18,7 +18,7 @@ var port = process.env.PORT || 3000;
 const minValue = -255;
 const maxValue = 255;
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', function(req, res){
     res.sendFile(path.join(__dirname, 'public/index.html'));
     console.log('HTML sent to client');
