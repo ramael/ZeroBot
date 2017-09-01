@@ -7,9 +7,26 @@
         <meta name="mobile-web-app-capable" content="yes">
         <title>ZeroBot Client</title>
         <link rel="icon" type="image/x-icon" href="favicon.ico">
+        <link rel="stylesheet" type="text/css" href="css/material-icons.css" />                
         <link rel="stylesheet" type="text/css" href="css/zerobot.css" />                
     </head>
     <body>
+        <div class="toolbar">
+            <div class="dropdown">
+                <button id="btnTools" class="dropdown-button" onclick="zbClient.onDropdownToggle(this)"><i class="material-icons">build</i></button>
+                <div class="dropdown-content">
+                  <a href="#" onclick="zbClient.onToolItemClick('L1')"><i class="material-icons">code</i></a>
+                  <a href="#" onclick="zbClient.onToolItemClick('L2')"><i class="material-icons">code</i></a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button id="btnSystem" class="dropdown-button" onclick="zbClient.onDropdownToggle(this)"><i class="material-icons">settings_power</i></button>
+                <div class="dropdown-content">
+                  <a href="#" onclick="zbClient.onSystemItemClick('REBOOT')"><i class="material-icons">settings_backup_restore</i></a>
+                  <a href="#" onclick="zbClient.onSystemItemClick('SHUTDOWN')"><i class="material-icons">power_settings_new</i></a>
+                </div>
+            </div>
+        </div>
         <ul id="messages"></ul>       
         <center>
             <p id="streamContainer"></p>

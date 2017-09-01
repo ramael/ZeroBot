@@ -29,6 +29,34 @@ Vector2.prototype = {
     }
 };
 
+ZBUtils = {
+    createElement : function(tagName, id, classes, parentObj, events) {
+        parentObj = parentObj || document.body;
+        var elem = document.createElement(tagName);
+        if (id) {
+            elem.id = id;
+        }
+        if (classes) {
+            elem.className = classes;
+//            var splittedClasses = classes.split(" ");
+//            if (splittedClasses && splittedClasses.length > 0) {
+//                for (var i = 0, max = splittedClasses.length; i < max; i++) {
+//                    elem.classList.add(splittedClasses[i]);
+//                }
+//            }
+        }
+        if (events) {
+            for (var evt in events) {
+                if (events.hasOwnProperty(evt)) {
+                    elem.addEventListener(evt, events[evt]);
+                }
+            }
+        }
+        parentObj.appendChild(elem);
+        return elem;
+    }
+};
+
 ZeroBotClient = function() {
     this.touchable = ('createTouch' in document ? true : false);
     
@@ -62,6 +90,8 @@ ZeroBotClient = function() {
 };
 ZeroBotClient.prototype = {
     init: function() {
+        //window.onclick = this.closeDropdowns;
+        
         var streamImg = '<img src="http://' + window.location.hostname + ':9000/?action=stream" />';
         document.getElementById("streamContainer").innerHTML = streamImg;
         
@@ -91,13 +121,13 @@ ZeroBotClient.prototype = {
             this.canvas.addEventListener( 'touchstart', this.onTouchStart.bind(this), false );
             this.canvas.addEventListener( 'touchmove', this.onTouchMove.bind(this), false );
             this.canvas.addEventListener( 'touchend', this.onTouchEnd.bind(this), false );
-            window.onorientationchange = this.resetCanvas.bind(this);  
-            window.onresize = this.resetCanvas.bind(this);  
+            window.onorientationchange = this.resetCanvas.bind(this);              
         } else {
             this.canvas.addEventListener( 'mousemove', this.onMouseMove.bind(this), false );
             this.canvas.addEventListener( 'mousedown', this.onMouseDown.bind(this), false );
             this.canvas.addEventListener( 'mouseup', this.onMouseUp.bind(this), false );
         }
+        window.onresize = this.resetCanvas.bind(this);  
     },
     resetCanvas: function(e) {  
  	// resize the canvas - but remember - this clears the canvas too. 
@@ -224,7 +254,7 @@ ZeroBotClient.prototype = {
     
     /*	
      *	Touch event (e) properties : 
-     *	e.touches: 			Array of touch objects for every finger currently touching the screen
+     *	e.touches:              Array of touch objects for every finger currently touching the screen
      *	e.targetTouches: 	Array of touch objects for every finger touching the screen that
      *						originally touched down on the DOM object the transmitted the event.
      *	e.changedTouches	Array of touch objects for touches that are changed for this event. 					
@@ -243,6 +273,8 @@ ZeroBotClient.prototype = {
      *	pageY: Relative to the full page (includes scrolling)
      */	
     onTouchStart: function(e) {
+        this.closeDropdowns();
+        
         for( var i = 0, max = e.changedTouches.length; i < max; i++){
             var touch = e.changedTouches[i]; 
             if ((this.zbEvent.touchID < 0) && (touch.clientX < this.halfWidth)) {
@@ -284,6 +316,8 @@ ZeroBotClient.prototype = {
         }
     },
     onMouseDown: function(e) {
+        this.closeDropdowns();
+        
         this.zbEvent.touchStartPos.reset(e.offsetX, e.offsetY); 	
         this.zbEvent.touchPos.copyFrom(this.zbEvent.touchStartPos); 
         this.zbEvent.vector.reset(0,0); 
@@ -303,6 +337,35 @@ ZeroBotClient.prototype = {
         this.motor.right = 0;
         this.zbEvent.mouseDown = false;
         this.sendFlag = true;
+    },
+    
+    /*
+     * Toolbar events
+     */
+    closeDropdowns: function() {
+        var dropdowns = document.querySelectorAll(".dropdown-content");
+        if (dropdowns && dropdowns.length > 0) {
+            for (var i = 0, max = dropdowns.length; i < max; i++) {
+                dropdowns[i].classList.remove("show");                
+            }
+        }
+    },
+    onDropdownToggle: function(obj) {
+        this.closeDropdowns();
+        
+        if (!obj) return;
+        var contentNode = obj.parentNode.querySelector(".dropdown-content");
+        contentNode.classList.toggle("show");
+    },
+    onToolItemClick: function(action) {
+        this.closeDropdowns();
+        console.log("onToolItemClick: " + action);
+        return false;
+    },
+    onSystemItemClick: function(action) {
+        this.closeDropdowns();
+        console.log("onSystemItemClick: " + action);
+        return false;
     },
     
     /*
