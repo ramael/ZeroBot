@@ -51,19 +51,13 @@ ZeroBotClient = function() {
         left: 0,
         right: 0
     };
-    
-    this.mouseEvent = {
+       
+    this.zbEvent = {
         mouseDown: false,
-        mouseX: 0,
-        mouseY: 0
-    };
-    
-    this.touchEvent = {
-        touches: [],
-        leftTouchID: -1,
-        leftTouchPos: new Vector2(0,0),
-        leftTouchStartPos: new Vector2(0,0),
-        leftVector: new Vector2(0,0)
+        touchID: -1,
+        touchPos: new Vector2(0,0),
+        touchStartPos: new Vector2(0,0),
+        vector: new Vector2(0,0)
     };
 };
 ZeroBotClient.prototype = {
@@ -71,12 +65,9 @@ ZeroBotClient.prototype = {
         var streamImg = '<img src="http://' + window.location.hostname + ':9000/?action=stream" />';
         document.getElementById("streamContainer").innerHTML = streamImg;
         
-//        var msg = '<li>Touchable: ' + this.touchable + '</li>';
-//        document.getElementById("messages").innerHTML = msg;
-
         var that = this;
         this.socket.on('sysinfo', function(msg){
-            that.sysinfo = msg;
+            that.sysinfo = JSON.parse(msg);
         });
         
         this.setupCanvas();
@@ -127,10 +118,10 @@ ZeroBotClient.prototype = {
 	    this.drawBase();
 	}
 		
-	this.touchEvent.leftVector.x = this.getInRange(this.touchEvent.leftVector.x, this.minValue, this.maxValue);
-	this.touchEvent.leftVector.y = this.getInRange(this.touchEvent.leftVector.y, this.minValue, this.maxValue);
+	this.zbEvent.vector.x = this.getInRange(this.zbEvent.vector.x, this.minValue, this.maxValue);
+	this.zbEvent.vector.y = this.getInRange(this.zbEvent.vector.y, this.minValue, this.maxValue);
 		
-	this.tankDrive(this.touchEvent.leftVector.x, -this.touchEvent.leftVector.y);       
+	this.tankDrive(this.zbEvent.vector.x, -this.zbEvent.vector.y);       
 	if (this.motor.left > 0) this.motor.left += 90;
 	if (this.motor.left < 0) this.motor.left -= 90;
 	if (this.motor.right > 0) this.motor.right += 90;
@@ -138,68 +129,54 @@ ZeroBotClient.prototype = {
 	this.motor.left = this.getInRange(this.motor.left, this.minValue, this.maxValue);
 	this.motor.right = this.getInRange(this.motor.right, this.minValue, this.maxValue);
         
-        this.canvasContext.fillStyle = "white"; 
-        this.canvasContext.fillText("Stick position: " + this.touchEvent.leftVector.x + "x " + this.touchEvent.leftVector.y + "y", 10, 10); 
-	this.canvasContext.fillText("Left Motor: " + this.motor.left + " Right Motor: " + this.motor.right, 10, 20);	
-	this.canvasContext.fillText("System info: " + this.sysinfo, 10, 30);	
+        this.drawStats();
     },
     drawBase: function() {
-        if (!this.mouseEvent.mouseDown) return;
+        if (!this.zbEvent.mouseDown) return;
         
+        this.drawLandingSpot();
+        this.drawCurrentSpot();
+        this.drawCurrentSpotStats();
+    },
+    drawTouchable: function() {
+        if (this.zbEvent.touchID === -1) return;
+        
+        this.drawLandingSpot();
+        this.drawCurrentSpot();
+        this.drawCurrentSpotStats();
+    },
+    drawStats: function() {
+        this.canvasContext.fillStyle = "white"; 
+        this.canvasContext.fillText("Stick position: " + this.zbEvent.vector.x + "x " + this.zbEvent.vector.y + "y", 10, 10); 
+	this.canvasContext.fillText("Left Motor: " + this.motor.left + " Right Motor: " + this.motor.right, 10, 20);	
+	this.canvasContext.fillText("System info:", 10, 30);	
+        this.canvasContext.fillText("CPUs: " + this.sysinfo.cpus, 30, 40);	
+        this.canvasContext.fillText("Total mem: " + this.sysinfo.totalmem, 30, 50);	
+        this.canvasContext.fillText("Free mem: " + this.sysinfo.freemem, 30, 60);	
+    },
+    drawLandingSpot: function() {
         this.canvasContext.beginPath(); 
         this.canvasContext.strokeStyle = "cyan"; 
         this.canvasContext.lineWidth = 6; 
-        this.canvasContext.arc(this.touchEvent.leftTouchStartPos.x, this.touchEvent.leftTouchStartPos.y, 40, 0, Math.PI*2, true); 
+        this.canvasContext.arc(this.zbEvent.touchStartPos.x, this.zbEvent.touchStartPos.y, 40, 0, Math.PI*2, true); 
         this.canvasContext.stroke();
         this.canvasContext.beginPath(); 
         this.canvasContext.strokeStyle = "cyan"; 
         this.canvasContext.lineWidth = 2; 
-        this.canvasContext.arc(this.touchEvent.leftTouchStartPos.x, this.touchEvent.leftTouchStartPos.y, 60, 0, Math.PI*2, true); 
-        this.canvasContext.stroke();
+        this.canvasContext.arc(this.zbEvent.touchStartPos.x, this.zbEvent.touchStartPos.y, 60, 0, Math.PI*2, true); 
+        this.canvasContext.stroke();        
+    },
+    drawCurrentSpot: function() {
         this.canvasContext.beginPath(); 
         this.canvasContext.strokeStyle = "cyan"; 
-        this.canvasContext.arc(this.touchEvent.leftTouchPos.x, this.touchEvent.leftTouchPos.y, 40, 0, Math.PI*2, true); 
+        this.canvasContext.lineWidth = 6; 
+        this.canvasContext.arc(this.zbEvent.touchPos.x, this.zbEvent.touchPos.y, 40, 0, Math.PI*2, true); 
         this.canvasContext.stroke(); 
-
-        this.canvasContext.fillStyle = "white"; 
-        this.canvasContext.fillText("mouse: " + this.mouseEvent.mouseX + ", " + this.mouseEvent.mouseY, this.mouseEvent.mouseX, this.mouseEvent.mouseY); 
-        this.canvasContext.beginPath(); 
-        this.canvasContext.strokeStyle = "red";
-        this.canvasContext.lineWidth = "6";
-        this.canvasContext.arc(this.mouseEvent.mouseX, this.mouseEvent.mouseY, 40, 0, Math.PI*2, true); 
-        this.canvasContext.stroke();
     },
-    drawTouchable: function() {
-        if (this.touchEvent.touches && this.touchEvent.touches.length > 0) {
-            for (var i=0, max = this.touchEvent.touches.length; i < max; i++) {
-                var touch = this.touchEvent.touches[i]; 
-                //if (touch.identifier === this.touchEvent.leftTouchID){
-                    this.canvasContext.beginPath(); 
-                    this.canvasContext.strokeStyle = "cyan"; 
-                    this.canvasContext.lineWidth = 6; 
-                    this.canvasContext.arc(this.touchEvent.leftTouchStartPos.x, this.touchEvent.leftTouchStartPos.y, 40, 0, Math.PI*2, true); 
-                    this.canvasContext.stroke();
-                    this.canvasContext.beginPath(); 
-                    this.canvasContext.strokeStyle = "cyan"; 
-                    this.canvasContext.lineWidth = 2; 
-                    this.canvasContext.arc(this.touchEvent.leftTouchStartPos.x, this.touchEvent.leftTouchStartPos.y, 60, 0, Math.PI*2, true); 
-                    this.canvasContext.stroke();
-                    this.canvasContext.beginPath(); 
-                    this.canvasContext.strokeStyle = "cyan"; 
-                    this.canvasContext.arc(this.touchEvent.leftTouchPos.x, this.touchEvent.leftTouchPos.y, 40, 0, Math.PI*2, true); 
-                    this.canvasContext.stroke(); 
-                //} else {
-                    this.canvasContext.fillStyle = "white";
-                    this.canvasContext.fillText("touch id : "+touch.identifier+" x:"+touch.clientX+" y:"+touch.clientY, touch.clientX+30, touch.clientY-30); 
-                    this.canvasContext.beginPath(); 
-                    this.canvasContext.strokeStyle = "red";
-                    this.canvasContext.lineWidth = "6";
-                    this.canvasContext.arc(touch.clientX, touch.clientY, 40, 0, Math.PI*2, true); 
-                    this.canvasContext.stroke();
-                //}
-            }
-        }
-    },    
+    drawCurrentSpotStats: function() {
+        this.canvasContext.fillStyle = "white"; 
+        this.canvasContext.fillText("id: " + this.zbEvent.touchID + ", x: "+ this.zbEvent.touchPos.x + ", y: " + this.zbEvent.touchPos.y, this.zbEvent.touchPos.x + 25, this.zbEvent.touchPos.y - 25); 
+    },
     sendControls: function(){
 	if (this.sendFlag){
             this.socket.emit('pos', this.motor.left, this.motor.right);
@@ -268,40 +245,37 @@ ZeroBotClient.prototype = {
     onTouchStart: function(e) {
         for( var i = 0, max = e.changedTouches.length; i < max; i++){
             var touch = e.changedTouches[i]; 
-            if ((this.touchEvent.leftTouchID < 0) && (touch.clientX < this.halfWidth)) {
-                this.touchEvent.leftTouchID = touch.identifier; 
-                this.touchEvent.leftTouchStartPos.reset(touch.clientX, touch.clientY); 	
-                this.touchEvent.leftTouchPos.copyFrom(this.touchEvent.leftTouchStartPos); 
-                this.touchEvent.leftVector.reset(0,0); 
+            if ((this.zbEvent.touchID < 0) && (touch.clientX < this.halfWidth)) {
+                this.zbEvent.touchID = touch.identifier; 
+                this.zbEvent.touchStartPos.reset(touch.clientX, touch.clientY); 	
+                this.zbEvent.touchPos.copyFrom(this.zbEvent.touchStartPos); 
+                this.zbEvent.vector.reset(0,0); 
                 continue; 		
             } else {
                 //this.makeBullet(); 
             }	
         }
-        this.touchEvent.touches = e.touches; 
     },
     onTouchMove: function(e) {
         // Prevent the browser from doing its default thing (scroll, zoom)
         e.preventDefault();
         for (var i = 0, max = e.changedTouches.length; i < max; i++){
                 var touch = e.changedTouches[i]; 
-                if (this.touchEvent.leftTouchID === touch.identifier) {
-                    this.touchEvent.leftTouchPos.reset(touch.clientX, touch.clientY); 
-                    this.touchEvent.leftVector.copyFrom(this.touchEvent.leftTouchPos); 
-                    this.touchEvent.leftVector.minusEq(this.touchEvent.leftTouchStartPos);
+                if (this.zbEvent.touchID === touch.identifier) {
+                    this.zbEvent.touchPos.reset(touch.clientX, touch.clientY); 
+                    this.zbEvent.vector.copyFrom(this.zbEvent.touchPos); 
+                    this.zbEvent.vector.minusEq(this.zbEvent.touchStartPos);
                     this.sendFlag = true;
                     break; 		
                 }		
         }
-        this.touchEvent.touches = e.touches; 
     }, 
     onTouchEnd: function(e) { 
-        this.touchEvent.touches = e.touches; 
         for (var i = 0, max = e.changedTouches.length; i < max; i++){
             var touch = e.changedTouches[i]; 
-            if (this.touchEvent.leftTouchID === touch.identifier) {
-                this.touchEvent.leftTouchID = -1; 
-                this.touchEvent.leftVector.reset(0,0);
+            if (this.zbEvent.touchID === touch.identifier) {
+                this.zbEvent.touchID = -1; 
+                this.zbEvent.vector.reset(0,0);
                 this.motor.left = 0;
                 this.motor.right = 0;
                 this.sendFlag = true;
@@ -310,26 +284,24 @@ ZeroBotClient.prototype = {
         }
     },
     onMouseDown: function(e) {
-        this.touchEvent.leftTouchStartPos.reset(e.offsetX, e.offsetY); 	
-        this.touchEvent.leftTouchPos.copyFrom(this.touchEvent.leftTouchStartPos); 
-        this.touchEvent.leftVector.reset(0,0); 
-        this.mouseEvent.mouseDown = true;
+        this.zbEvent.touchStartPos.reset(e.offsetX, e.offsetY); 	
+        this.zbEvent.touchPos.copyFrom(this.zbEvent.touchStartPos); 
+        this.zbEvent.vector.reset(0,0); 
+        this.zbEvent.mouseDown = true;
     },
     onMouseMove: function(e) {
-        this.mouseEvent.mouseX = e.offsetX;
-        this.mouseEvent.mouseY = e.offsetY;
-        if (this.mouseEvent.mouseDown){
-            this.touchEvent.leftTouchPos.reset(e.offsetX, e.offsetY); 
-            this.touchEvent.leftVector.copyFrom(this.touchEvent.leftTouchPos); 
-            this.touchEvent.leftVector.minusEq(this.touchEvent.leftTouchStartPos); 	
+        if (this.zbEvent.mouseDown){
+            this.zbEvent.touchPos.reset(e.offsetX, e.offsetY); 
+            this.zbEvent.vector.copyFrom(this.zbEvent.touchPos); 
+            this.zbEvent.vector.minusEq(this.zbEvent.touchStartPos); 	
             this.sendFlag = true;
         }
     },
     onMouseUp: function(e) { 
-        this.touchEvent.leftVector.reset(0,0);
+        this.zbEvent.vector.reset(0,0);
         this.motor.left = 0;
         this.motor.right = 0;
-        this.mouseEvent.mouseDown = false;
+        this.zbEvent.mouseDown = false;
         this.sendFlag = true;
     },
     
@@ -338,9 +310,6 @@ ZeroBotClient.prototype = {
      */
     getInRange: function(value, min, max) {
         return Math.min(Math.max(parseInt(value), min), max);
-    },
-    isMouseOver: function(minX, minY, maxX, maxY){
-	return(this.mouseEvent.mouseX > minX && this.mouseEvent.mouseY > minY && this.mouseEvent.mouseX < maxX && this.mouseEvent.mouseY < maxY);
     },
     remap: function(value, from1, to1, from2, to2){
 	return (value - from1) / (to1 - from1) * (to2 - from2) + from2;

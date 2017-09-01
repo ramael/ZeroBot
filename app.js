@@ -26,11 +26,6 @@ var appOptions = {
 app.use(express.static(appPath, appOptions));
 //app.use('/', express.static(appPath, appOptions));
 
-//app.get('/', function(req, res){
-//    res.sendFile(path.join(appPath, 'index.html'));
-//    console.log('HTML sent to client');
-//});
-
 //Whenever someone connects this gets executed
 io.on('connection', function(socket){
     console.log('A user connected');
@@ -97,7 +92,11 @@ function getSystemInfo() {
     var cpus = os.cpus();
     var totalmem = os.totalmem();
     var freemen = os.freemem();
-    var info = "CPUs: " + cpus + " Total mem: " + totalmem + " Free mem: " + freemen;
-    io.emit("sysinfo", info);
+    var info = {
+        cpus: cpus,
+        totalmem: totalmem,
+        freemem: freemen
+    };
+    io.emit("sysinfo", JSON.stringify(info));
 //    console.log("sysinfo", info);
 }
