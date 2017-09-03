@@ -209,7 +209,7 @@ ZeroBotClient.prototype = {
     },
     sendControls: function(){
 	if (this.sendFlag){
-            this.socket.emit('pos', this.motor.left, this.motor.right);
+            this.socket.emit('MOVE', this.motor.left, this.motor.right);
             this.sendFlag = false;
 	}
     },
@@ -352,19 +352,18 @@ ZeroBotClient.prototype = {
     },
     onDropdownToggle: function(obj) {
         this.closeDropdowns();
-        
         if (!obj) return;
         var contentNode = obj.parentNode.querySelector(".dropdown-content");
         contentNode.classList.toggle("show");
     },
     onToolItemClick: function(action) {
         this.closeDropdowns();
-        console.log("onToolItemClick: " + action);
+	this.socket.emit("TOOL", action);
         return false;
     },
     onSystemItemClick: function(action) {
         this.closeDropdowns();
-        console.log("onSystemItemClick: " + action);
+	this.socket.emit("SYSTEM", action);
         return false;
     },
     
@@ -383,7 +382,7 @@ ZeroBotClient.prototype = {
         document.getElementById("messages").appendChild( li );  
     },
     debugSrv: function(msg) {
-        this.socket.emit('debug', msg);
+        this.socket.emit('DEBUG', msg);
     }
 };
 var zbClient = new ZeroBotClient();
