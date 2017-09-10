@@ -24,5 +24,11 @@ Software list:
 - [MultiTouch](http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/)
 - [MJpg-Streamer](http://github.com/jacksonliam/mjpg-streamer) to be replaced by [UV4L](http://www.linux-projects.org/uv4l/)
 
+## Installation
+
+### Raspberry Pi Zero W WiFi Client and Access Point Configuration
+[Here](https://raspberrypi.stackexchange.com/questions/63841/rpi-zero-w-as-both-wifi-client-and-access-point/64172)
+[Here](http://imti.co/post/145442415333/raspberry-pi-3-wifi-station-ap)
+
 ## License
 This project is licensed under the terms of the MIT license.
